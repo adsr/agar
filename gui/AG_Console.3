@@ -1,0 +1,212 @@
+.\" Copyright (c) 2007 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd October 2, 2007
+.Dt AG_CONSOLE 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.3
+.Sh NAME
+.Nm AG_Console
+.Nd agar log console widget
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+The
+.Nm
+widget displays a set of messages in log format, where a number of
+attributes may be associated with individual messages.
+The display is automatically scrolled to display new messages.
+.Sh INHERITANCE HIERARCHY
+.Xr AG_Object 3 ->
+.Xr AG_Widget 3 ->
+.Nm .
+.Sh INITIALIZATION
+.nr nS 1
+.Ft "AG_Console *"
+.Fn AG_ConsoleNew "AG_Widget *parent" "Uint flags"
+.Pp
+.Ft "void"
+.Fn AG_ConsoleSetPadding "AG_Console *cons" "int padding"
+.Pp
+.Ft "void"
+.Fn AG_ConsoleSetFont "AG_Console *cons" "AG_Font *font"
+.Pp
+.nr nS 0
+The
+.Fn AG_ConsoleNew
+function allocates, initializes, and attaches a new
+.Nm
+widget.
+Acceptable
+.Fa flags
+include:
+.Pp
+.Bl -tag -width "AG_CONSOLE_EXPAND "
+.It AG_CONSOLE_HFILL
+Expand horizontally in parent (equivalent to invoking
+.Xr AG_ExpandHoriz 3 ) .
+.It AG_CONSOLE_VFILL
+Expand vertically in parent (equivalent to invoking
+.Xr AG_ExpandVert 3 ) .
+.It AG_CONSOLE_EXPAND
+Shorthand for
+.Dv AG_CONSOLE_HFILL|AG_CONSOLE_VFILL .
+.El
+.Pp
+The
+.Fn AG_ConsoleSetPadding
+function sets the padding around messages in pixels.
+.Pp
+.Fn AG_ConsoleSetFont
+configures an alternate font for the
+.Nm
+messages (see
+.Xr AG_FetchFont 3 ) .
+.Sh MESSAGES
+.nr nS 1
+.Ft "AG_ConsoleLine *"
+.Fn AG_ConsoleMsg "AG_Console *cons" "const char *format" "..."
+.Pp
+.Ft "AG_ConsoleLine *"
+.Fn AG_ConsoleMsgS "AG_Console *cons" "const char *text"
+.Pp
+.Ft "void"
+.Fn AG_ConsoleMsgPtr "AG_ConsoleLine *line" "void *ptr"
+.Pp
+.Ft "void"
+.Fn AG_ConsoleMsgIcon "AG_ConsoleLine *line" "int surface"
+.Pp
+.Ft "void"
+.Fn AG_ConsoleClear "AG_Console *cons"
+.Pp
+.nr nS 0
+The
+.Fn AG_ConsoleMsg
+function appends a new message to the console log and returns a pointer to
+the newly created
+.Ft AG_ConsoleLine
+structure, useful for tweaking attributes specific to the message.
+The
+.Fn AG_ConsoleMsgS
+variant accepts a plain C string.
+Either function may fail and return NULL if there is insufficient memory
+for the new message.
+.Pp
+As a special case, if a
+.Fa cons
+argument of NULL is passed to
+.Fn AG_ConsoleMsg
+or
+.Fn AG_ConsoleMsgS ,
+the function prints the message with
+.Xr AG_Verbose 3
+before returning NULL.
+.Pp
+.Fn AG_ConsoleMsgPtr
+associates an arbitrary user pointer with the given line entry.
+.Fn AG_ConsoleMsgIcon
+sets an icon to display left of the message
+(see
+.Xr AG_IconMgr 3 ) .
+.Pp
+.Fn AG_ConsoleClear
+removes all entries.
+.Sh EVENTS
+.\" The
+.\" .Nm
+.\" widget neither reacts to nor generates any event.
+The
+.Nm
+widget reacts to the following events:
+.Pp
+.Bl -tag -compact -width "mouse-button-down "
+.It mouse-motion
+.It mouse-button-up
+.It mouse-button-down
+.It key-up
+.It key-down
+Scroll display.
+.El
+.Pp
+The
+.Nm
+widget does not generate any event.
+.Sh STRUCTURE DATA
+For the
+.Ft AG_Console
+object:
+.Pp
+.Bl -tag -compact -width "AG_ConsoleLine *lines "
+.It Ft AG_Mutex lock
+Lock on buffer contents.
+.It Ft AG_ConsoleLine *lines
+Lines in buffer.
+.It Ft Uint nLines
+Line count.
+.El
+.Pp
+For the
+.Ft AG_ConsoleLine
+structure:
+.Pp
+.Bl -tag -compact -width "int selected "
+.It Ft char *text
+Text string.
+.It Ft size_t len
+Length of string, not including NUL.
+.It Ft int selected
+Line selection flag.
+.It Ft int icon
+Icon surface to display.
+.It Ft AG_Font *font
+Alternate font (if NULL, the default font is used).
+If calling
+.Fn AG_ConsoleSetFont
+is not convenient, it is legal to modify this pointer at run time (but
+due to caching, only newly entered lines will use the new font).
+.It Ft Uint32 cFg
+Foreground color (in
+.Va agDisplayFmt
+format).
+.It Ft Uint32 cBg
+Background color (in
+.Va agDisplayFmt
+format).
+.It Ft void *p
+User pointer
+.El
+.Sh SEE ALSO
+.Xr AG_Intro 3 ,
+.Xr AG_Widget 3 ,
+.Xr AG_Text 3 ,
+.Xr AG_Textbox 3 ,
+.Xr AG_Window 3
+.Sh HISTORY
+The
+.Nm
+widget first appeared in Agar 1.3.
