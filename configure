@@ -1722,8 +1722,8 @@ if [ "${MK_CACHED}" = "No" ]; then
 int main(int argc, char *argv[]) {
 	int64_t i64 = 0;
 	u_int64_t u64 = 0;
-	i64 = 1;
-	u64 = 1;
+	++i64;
+	++u64;
 	return (0);
 }
 
